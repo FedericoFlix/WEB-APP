@@ -12,26 +12,33 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Inicializar la app
 app = FastAPI()
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 
-origins = [ "http://localhost:5173",
-           "http://127.0.0.1:5173", 
-           "https://federicoflix.github.io"
+app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://federicoflix.github.io"
+   
 ]
 
-# Configurar CORS
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://federicoflix.github.io"
-        "https://federicoflix.github.io/WEB-APP/"
 
-    ],
+    CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Logging temporal para verificar qué Origin llega desde el navegador
+@app.post("/token", response_model=Token)
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+    print("Origin header:", request.headers.get("origin"))
+    # resto de la lógica...
+
 
 # Usuarios en memoria
 fake_users_db = {
