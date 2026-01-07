@@ -21,7 +21,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "https://FedericoFlix.github.io"
         "https://FedericoFlix.github.io/WEB-APP/"
-"
+
     ],
     allow_credentials=True,
     allow_methods=["*"],
