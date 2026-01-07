@@ -1,19 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import jwt
 
-# Configuración básica
 SECRET_KEY = "tu_secreto_jwt"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-# Inicializar la app
-app = FastAPI()
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -21,11 +15,9 @@ origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://federicoflix.github.io"
-   
 ]
 
 app.add_middleware(
-
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
@@ -33,12 +25,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Logging temporal para verificar qué Origin llega desde el navegador
-@app.post("/token", response_model=Token)
-async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
-    print("Origin header:", request.headers.get("origin"))
-    # resto de la lógica...
+# Modelo de respuesta (debe estar definido antes del endpoint)
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Usuarios en memoria
 fake_users_db = {
@@ -48,26 +40,22 @@ fake_users_db = {
     "LisandroU": {"username": "LisandroU", "password": "1234"},
 }
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
 def authenticate_user(username: str, password: str):
     for user in fake_users_db.values():
         if user["username"].lower() == username.lower() and user["password"] == password:
             return user
     return None
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 @app.post("/token", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
+    # Logging temporal para verificar el Origin que llega desde el navegador
+    print("Origin header:", request.headers.get("origin"))
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Usuario o contraseña incorrectos")
