@@ -13,14 +13,19 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # Inicializar la app
 app = FastAPI()
 
+origins = [ "http://localhost:5173",
+           "http://127.0.0.1:5173", 
+           "https://federicoflix.github.io"
+]
+
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://FedericoFlix.github.io"
-        "https://FedericoFlix.github.io/WEB-APP/"
+        "https://federicoflix.github.io"
+        "https://federicoflix.github.io/WEB-APP/"
 
     ],
     allow_credentials=True,
