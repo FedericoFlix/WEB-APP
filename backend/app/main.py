@@ -10,23 +10,23 @@ SECRET_KEY = "tu_secreto_jwt"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-app = FastAPI(title="WEB-APP API")
+# Inicializar la app
+app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://tu-usuario.github.io"
-]
-
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://FedericoFlix.github.io"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Usuarios en memoria (4 personas)
+# Usuarios en memoria
 fake_users_db = {
     "Federico": {"username": "Federico", "password": "1234"},
     "Rodrigo": {"username": "Rodrigo", "password": "1234"},
@@ -41,7 +41,6 @@ class Token(BaseModel):
     token_type: str
 
 def authenticate_user(username: str, password: str):
-    # Buscar ignorando mayúsculas/minúsculas y usando el campo "username"
     for user in fake_users_db.values():
         if user["username"].lower() == username.lower() and user["password"] == password:
             return user
