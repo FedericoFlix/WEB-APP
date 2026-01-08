@@ -39,6 +39,19 @@ fake_users_db = {
     "Agustin": {"username": "Agustin", "password": "1234"},
     "LisandroU": {"username": "LisandroU", "password": "1234"},
 }
+from .db import Base, engine
+from .routers import usuarios
+
+# Crear tablas en la base de datos al iniciar
+@app.on_event("startup")
+async def startup_event():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+# Incluir el router de usuarios
+app.include_router(usuarios.router)
+
+
 
 def authenticate_user(username: str, password: str):
     for user in fake_users_db.values():

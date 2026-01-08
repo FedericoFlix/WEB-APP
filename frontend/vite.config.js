@@ -5,3 +5,4 @@ export default defineConfig({
   plugins: [react()],
   base: '/WEB-APP/',   // 👈 importante: igual al nombre del repo
 })
+
