@@ -88,3 +88,32 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
         return {"username": username}
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Token inválido")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def get_db():
+    async with SessionLocal() as session:
+        yield session
+
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from .db import Base, engine
+from .routers import usuarios
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # ajustá según tu frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+async def startup_event():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+app.include_router(usuarios.router)
